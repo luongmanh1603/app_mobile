@@ -1,61 +1,93 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/models/task.dart';
+import 'package:flutter_demo/widget/cart_body.dart';
+import 'package:flutter_demo/widget/model_bottom.dart';
 
-void main() {
-
+void main(List<String> args) {
   runApp(MaterialApp(
-    home: SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Flutter Demo'),
-        ),
-        body: Center(
-          child: MyStatefulsWidget(false),
-        ),
-      ),
-      ),
     debugShowCheckedModeBanner: false,
+    home: MyApp(),
   ));
 }
-class MyStatelessWidget extends StatelessWidget {
-  late final bool loading;
-  
-  MyStatelessWidget(this.loading);
- @override
- Widget build(BuildContext context) {
-  //  if (loading) {
-  //    return const CircularProgressIndicator();
-  //  } else {
-  //    return const Text('Hello World');
-  //  }
-  return loading ? const CircularProgressIndicator() : const Text('Hello World');
- } 
-}
-class MyStatefulsWidget extends StatefulWidget {
-  late final bool loading;
-  MyStatefulsWidget(this.loading);
+
+class MyApp extends StatefulWidget {
+   MyApp({super.key});
+
   @override
-  State<MyStatefulsWidget> createState() {
-    return _MyStatefulsWidgetState(); 
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class _MyStatefulsWidgetState extends State<MyStatefulsWidget> {
-  late bool _localLoading;
-  @override
-  void initState() {
-    // TODO: implement initState
-    _localLoading = widget.loading;
-  }
+class _MyAppState extends State<MyApp> {
+  final List<Task> tasks = [];
 
-
- 
-  @override
-  Widget build(BuildContext context) {
-   return _localLoading ? const CircularProgressIndicator() : FloatingActionButton(onPressed: onClick);
-  }
-  void onClick() {
+  void _handleAddTask(String task) {
+    final newTask = Task(id: tasks.length + 1, title: task);
+    if (task.isEmpty) {
+      return;
+    }
     setState(() {
-      _localLoading = true;
+      tasks.add(newTask);
     });
   }
+  void _handleDeleteTask(int id) {
+    setState(() {
+      tasks.removeWhere((task) => task.id == id);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Center(
+          child: Text(
+            'ToDoList',
+            style: TextStyle(
+              color: Color.fromARGB(255, 255, 255, 255),
+              fontSize: 40,
+              fontWeight: FontWeight.bold,
+           ),
+          ),
+        ),
+        backgroundColor: const Color.fromARGB(255, 12, 0, 238),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: Column(
+          children: tasks.map((task) => CardBody(
+            task : task, 
+            deleteTask: _handleDeleteTask,
+            index: tasks.indexOf(task),
+            )).toList(),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            showModalBottomSheet(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              isScrollControlled: true,
+              context: context, 
+              builder: (BuildContext content) {
+                return ModalBottom(addTask: _handleAddTask);
+
+              }
+            );
+          },
+          backgroundColor: const Color.fromARGB(255, 12, 0, 238),
+          child:  const Icon(
+            Icons.add
+            ),
+      ),
+    );
+  }
 }
+
+
+
